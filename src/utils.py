@@ -99,9 +99,42 @@ def rhs_centered(T, dx, alpha, source):
     """
     nx = T.shape[0]
     f = np.empty(nx)
+
+    f[1:-1] = alpha / dx ** 2 * (T[:-2] - 2 * T[1:-1] + T[2:]) + source[1:-1]
+    f[0] = 0
+    f[-1] = 0
     
-    f[1:-1] = alpha/dx**2 * (T[:-2] - 2*T[1:-1] + T[2:]) + source[1:-1]
-    f[0] = 0.
-    f[-1] = 0.
+    return f
+
+
+def rhs_centered_neumann(T, dx, alpha, source, heat_transfer_coefficient):
+    """Returns the right-hand side of the 1D heat
+    equation based on centered finite differences
+    
+    Parameters
+    ----------
+    T : array of floats
+        solution at the current time-step.
+    dx : float
+        grid spacing
+    alpha : float
+        heat conductivity
+    source : array of floats
+        source term for the heat equation
+    
+    Returns
+    -------
+    f : array of floats
+        right-hand side of the heat equation with
+        Dirichlet boundary conditions implemented
+    """
+    nx = T.shape[0]
+    f = np.empty(nx)
+
+    # Neumann
+    f[0] = f[0] + alpha / (dx ** 2) * (2 * f[1] - 2 * f[0] - 2 * dx * (f[0] - 0)) * heat_transfer_coefficient
+    f[-1] = f[-1] + alpha / (dx ** 2) * (2 * f[-2] - 2 * f[-1] - 2 * dx * (f[-1] - 0)) * heat_transfer_coefficient
+    
+    f[1:-1] = alpha / dx ** 2 * (T[:-2] - 2 * T[1:-1] + T[2:]) + source[1:-1]
     
     return f
