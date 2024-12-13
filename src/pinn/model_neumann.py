@@ -183,15 +183,9 @@ class HeatEq1DPINNRegressor(pl.LightningModule):
             create_graph=True,
         )[0]
 
-
         # ! Neumann
-        #f[0] = f[0] + alpha / (dx ** 2) * (2 * f[1] - 2 * f[0] - 2 * dx * (f[0] - 0)) * heat_transfer_coefficient
-        
-        #loss_BC = self.pinn_losses.loss_function_IC_BC(y_pred=y_pred_BC, y_train=u)
-        #neumann_cond = (-0.66 / 25000 ) * self.hparams.loss_BC_param * u_x * (CHARACTERISTIC_TEMP/CHARACTERISTIC_Z) - y_pred_BC * CHARACTERISTIC_TEMP + 23
-        #loss_BC = self.pinn_losses.loss_function_IC_BC(y_pred=y_pred_BC, y_train=y_train_BC) * self.hparams.loss_BC_param
-        heat_transfer_coefficient = 0.01
-        neumann_cond = heat_transfer_coefficient * (y_pred_BC - 0) - u_x
+        heat_transfer_const = 0.01
+        neumann_cond = torch.abs(u_x) - heat_transfer_const
         loss_BC = torch.mean((neumann_cond) ** 2)
 
         y_pred_PDE = self.net(x_train_x, x_train_t)
